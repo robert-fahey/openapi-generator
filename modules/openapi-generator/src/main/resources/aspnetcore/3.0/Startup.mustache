@@ -31,10 +31,6 @@ namespace {{packageName}}
             Configuration = configuration;
         }
 
-        {{useCors}}
-        private const string Open = "open";
-        {{/useCors}}
-
         /// <summary>
             /// The application configuration.
         /// </summary>
@@ -107,22 +103,6 @@ namespace {{packageName}}
                     c.OperationFilter<GeneratePathParamsValidationFilter>();
                 });
             {{/useSwashbuckle}}
-
-            {{useCors}}
-            var allowedOrigins = _configuration.GetSection("AllowedOrigins").Get<string[]>();
-            services.Configure<MvcOptions>(options => options.Filters.Add(new CorsAuthorizationFilterFactory(Open)));
-            services.AddCors(
-                options =>
-                    {
-                        options.AddPolicy(
-                            Open,
-                            policyBuilder =>
-                                {
-                                    policyBuilder.SetIsOriginAllowed(s => allowedOrigins.ToList().Contains(s)).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
-                                });
-                    });
-
-            {{/useCors}}
         }
 
         /// <summary>
@@ -148,10 +128,11 @@ namespace {{packageName}}
                     //TODO: Or alternatively use the original Swagger contract that's included in the static files
                     // c.SwaggerEndpoint("/openapi-original.json", "{{#appName}}{{{appName}}}{{/appName}}{{^appName}}{{packageName}}{{/appName}} Original");
                 }){{/useSwashbuckle}};{{^useDefaultRoutng}}
-
-            {{useCors}}
-            app.UseCors(Open);
-            {{/useCors}}
+            app.UseRouting();
+            app.UseEndpoints(endpoints =>
+	            {
+	    	        endpoints.MapControllers();
+	            });{{/useDefaultRoutng}}
 
             if (env.IsDevelopment())
             {

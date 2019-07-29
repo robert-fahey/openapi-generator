@@ -37,6 +37,7 @@ import static java.util.UUID.randomUUID;
 public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
 
     public static final String USE_SWASHBUCKLE = "useSwashbuckle";
+    public static final String USE_CORS = "useCors";
     public static final String ASPNET_CORE_VERSION = "aspnetCoreVersion";
     public static final String SWASHBUCKLE_VERSION = "swashbuckleVersion";
     public static final String CLASS_MODIFIER = "classModifier";
@@ -81,6 +82,7 @@ public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
     private boolean useFrameworkReference = false;
     private boolean useNewtonsoft = true;
     private boolean useDefaultRouting = true;
+    private boolean useCors = true;
     private String newtonsoftVersion = "3.0.0-preview5-19227-01";
 
     public AspNetCoreServerCodegen() {
@@ -205,10 +207,13 @@ public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
                 "Version for Microsoft.AspNetCore.Mvc.NewtonsoftJson for ASP.NET Core 3.0+",
                 newtonsoftVersion);
 
-
         addSwitch(USE_DEFAULT_ROUTING,
                 "Use default routing for the  ASP.NET Core version. For 3.0 turn off default because it is not yet supported.",
                 useDefaultRouting);
+
+        addSwitch(USE_CORS,
+                "Enables Cross-Origin Requests",
+                useCors);
 
         classModifier.addEnum("", "Keep class default with no modifier");
         classModifier.addEnum("abstract", "Make class abstract");
@@ -557,6 +562,10 @@ public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
                 additionalProperties.put(USE_NEWTONSOFT, useNewtonsoft);
             }
         }
+    }
+
+    private void setUseCors() {
+        useDefaultRouting = true;
     }
 
     private void setUseEndpointRouting() {
