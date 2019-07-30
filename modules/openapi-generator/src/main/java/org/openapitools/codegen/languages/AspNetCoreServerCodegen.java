@@ -82,7 +82,7 @@ public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
     private boolean useFrameworkReference = false;
     private boolean useNewtonsoft = true;
     private boolean useDefaultRouting = true;
-    private boolean useCors = true;
+    private boolean useCors = false;
     private String newtonsoftVersion = "3.0.0-preview5-19227-01";
 
     public AspNetCoreServerCodegen() {
@@ -300,6 +300,7 @@ public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
         setModelClassModifier();
         setUseSwashbuckle();
         setOperationIsAsync();
+        setUseCors();
 
         // CHeck for class modifier if not present set the default value.
         additionalProperties.put(PROJECT_SDK, projectSdk);
@@ -565,7 +566,10 @@ public class AspNetCoreServerCodegen extends AbstractCSharpCodegen {
     }
 
     private void setUseCors() {
-        useDefaultRouting = true;
+        if(additionalProperties.containsKey(USE_CORS)) {
+            useCors = true;
+            additionalProperties.put(USE_CORS, useCors);
+        }
     }
 
     private void setUseEndpointRouting() {

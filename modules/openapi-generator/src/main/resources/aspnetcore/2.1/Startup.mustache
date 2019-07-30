@@ -13,7 +13,9 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using {{packageName}}.Filters;{{/useSwashbuckle}}
 using {{packageName}}.Authentication;
-using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization;{{#useCors}}
+using System.Linq;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;{{/useCors}}
 
 namespace {{packageName}}
 {
@@ -31,7 +33,7 @@ namespace {{packageName}}
             Configuration = configuration;
         }
 
-        {{useCors}}
+        {{#useCors}}
         private const string Open = "open";
         {{/useCors}}
 
@@ -108,8 +110,8 @@ namespace {{packageName}}
                 });
             {{/useSwashbuckle}}
 
-            {{useCors}}
-            var allowedOrigins = _configuration.GetSection("AllowedOrigins").Get<string[]>();
+            {{#useCors}}
+            var allowedOrigins = Configuration.GetSection("AllowedOrigins").Get<string[]>();
             services.Configure<MvcOptions>(options => options.Filters.Add(new CorsAuthorizationFilterFactory(Open)));
             services.AddCors(
                 options =>
@@ -131,7 +133,6 @@ namespace {{packageName}}
         /// <param name="app"></param>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseHttpsRedirection();
             app
                 .UseMvc()
                 .UseDefaultFiles()
@@ -147,9 +148,9 @@ namespace {{packageName}}
 
                     //TODO: Or alternatively use the original Swagger contract that's included in the static files
                     // c.SwaggerEndpoint("/openapi-original.json", "{{#appName}}{{{appName}}}{{/appName}}{{^appName}}{{packageName}}{{/appName}} Original");
-                }){{/useSwashbuckle}};{{^useDefaultRoutng}}
+                }){{/useSwashbuckle}};
 
-            {{useCors}}
+            {{#useCors}}
             app.UseCors(Open);
             {{/useCors}}
 
