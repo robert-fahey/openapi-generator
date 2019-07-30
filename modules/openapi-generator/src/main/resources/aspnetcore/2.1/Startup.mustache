@@ -13,6 +13,7 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using {{packageName}}.Filters;{{/useSwashbuckle}}
 using {{packageName}}.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization;{{#useCors}}
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;{{/useCors}}
@@ -32,10 +33,8 @@ namespace {{packageName}}
         {
             Configuration = configuration;
         }
-
-        {{#useCors}}
-        private const string Open = "open";
-        {{/useCors}}
+		{{#useCors}}
+        private const string Open = "open";{{/useCors}}
 
         /// <summary>
             /// The application configuration.
@@ -54,7 +53,7 @@ namespace {{packageName}}
             services.AddTransient<IAuthorizationHandler, ApiKeyRequirementHandler>();
             services.AddAuthorization(authConfig =>
             {
-{{/-first}}            
+{{/-first}}
                 authConfig.AddPolicy("{{name}}",
                     policyBuilder => policyBuilder
                         .AddRequirements(new ApiKeyRequirement(new[] { "my-secret-key" },"{{name}}")));
@@ -66,7 +65,7 @@ namespace {{packageName}}
 
             // Add framework services.
             services
-                .AddMvc({{^useDefaultRoutng}}opts => opts.EnableEndpointRouting = false{{/useDefaultRoutng}})
+                .AddMvc({{^useDefaultRouting}}opts => opts.EnableEndpointRouting = false{{/useDefaultRouting}})
                 {{#compatibilityVersion}}
                 .SetCompatibilityVersion(CompatibilityVersion.{{compatibilityVersion}})
                 {{/compatibilityVersion}}
@@ -109,8 +108,8 @@ namespace {{packageName}}
                     c.OperationFilter<GeneratePathParamsValidationFilter>();
                 });
             {{/useSwashbuckle}}
+			{{#useCors}}
 
-            {{#useCors}}
             var allowedOrigins = Configuration.GetSection("AllowedOrigins").Get<string[]>();
             services.Configure<MvcOptions>(options => options.Filters.Add(new CorsAuthorizationFilterFactory(Open)));
             services.AddCors(
@@ -123,7 +122,6 @@ namespace {{packageName}}
                                     policyBuilder.SetIsOriginAllowed(s => allowedOrigins.ToList().Contains(s)).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                                 });
                     });
-
             {{/useCors}}
         }
 
@@ -133,6 +131,7 @@ namespace {{packageName}}
         /// <param name="app"></param>
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseHttpsRedirection();
             app
                 .UseMvc()
                 .UseDefaultFiles()
@@ -149,10 +148,6 @@ namespace {{packageName}}
                     //TODO: Or alternatively use the original Swagger contract that's included in the static files
                     // c.SwaggerEndpoint("/openapi-original.json", "{{#appName}}{{{appName}}}{{/appName}}{{^appName}}{{packageName}}{{/appName}} Original");
                 }){{/useSwashbuckle}};
-
-            {{#useCors}}
-            app.UseCors(Open);
-            {{/useCors}}
 
             if (env.IsDevelopment())
             {
