@@ -54,7 +54,7 @@ namespace {{apiPackage}}
 {{#returnType}}
             string exampleJson = null;
             {{#examples}}
-            exampleJson = "{{{example}}}";
+            exampleJson = "{{#isListCollection}}'['+{{/isListCollection}}{{{example}}}{{#isListCollection}}+']'{{/isListCollection}}";
             {{/examples}}
             {{#isListCollection}}{{>listReturn}}{{/isListCollection}}{{^isListCollection}}{{#isMapContainer}}{{>mapReturn}}{{/isMapContainer}}{{^isMapContainer}}{{>objectReturn}}{{/isMapContainer}}{{/isListCollection}}
             {{!TODO: defaultResponse, examples, auth, consumes, produces, nickname, externalDocs, imports, security}}

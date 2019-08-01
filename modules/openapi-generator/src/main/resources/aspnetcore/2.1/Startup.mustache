@@ -13,7 +13,6 @@ using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using {{packageName}}.Filters;{{/useSwashbuckle}}
 using {{packageName}}.Authentication;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization;{{#useCors}}
 using System.Linq;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;{{/useCors}}
@@ -110,7 +109,6 @@ namespace {{packageName}}
             {{/useSwashbuckle}}
 			{{#useCors}}
 
-            var allowedOrigins = Configuration.GetSection("AllowedOrigins").Get<string[]>();
             services.Configure<MvcOptions>(options => options.Filters.Add(new CorsAuthorizationFilterFactory(Open)));
             services.AddCors(
                 options =>
@@ -119,7 +117,11 @@ namespace {{packageName}}
                             Open,
                             policyBuilder =>
                                 {
-                                    policyBuilder.SetIsOriginAllowed(s => allowedOrigins.ToList().Contains(s)).AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+                                    policyBuilder
+                                         .AllowAnyOrigin()
+                                         .AllowAnyHeader()
+                                         .AllowAnyMethod()
+                                         .AllowCredentials();
                                 });
                     });
             {{/useCors}}
@@ -149,6 +151,10 @@ namespace {{packageName}}
                     // c.SwaggerEndpoint("/openapi-original.json", "{{#appName}}{{{appName}}}{{/appName}}{{^appName}}{{packageName}}{{/appName}} Original");
                 }){{/useSwashbuckle}};
 
+            {{#useCors}}
+            app.UseCors(Open);
+
+            {{/useCors}}
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
